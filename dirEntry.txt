@@ -1,2 +1,0 @@
-/tmp/example/	0
-	/tmp/example/hello.txt	50
