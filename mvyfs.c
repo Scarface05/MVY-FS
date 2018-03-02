@@ -2,42 +2,34 @@
 // Implement persistence through the use of saved txt files.
 // Fast Searching to find the directory name (Hash table / B-tree?)
 
-//MYV-FS demo
+//random access file demo
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <ctype.h>
 #include <string.h>
+ 
+#define FNAME "mvyfs.dat"
 
-#define FSNAME "mvyfs.dat"
-#define DATAFILE "data.dat"
-#define INDEXFILE "index.dat"
-#define FILENAME_LEN 256
-#define BLOCKSIZE 4096 
-#define MAX_CONTENT 10
-#define MAX_FILE_SIZE 20480
-#define NUMBER_OF_BLOCKS MAX_FILE_SIZE/BLOCKSIZE
 
 // directory data struct
 struct directory_record
 { 
 	int inode;
-	char dir_name[FILENAME_LEN];
-	int number_of_files_contained;
-	int parent_directory;
-	int number_of_directories_contained;
-	int file_list[MAX_CONTENT];
-	int dir_list[MAX_CONTENT];
+	char dir_name[256];
+ 	int number_of_files_contained;
+ 	int number_of_directories_contained;
+ 	struct directory_record *dir_info[10];
+ 	struct file_record *file_info[10];
 };
 
 struct file_record
 {
 	int inode;
 	int file_size;
-	char file_name[FILENAME_LEN];
-	int file_offsets[NUMBER_OF_BLOCKS];
-	int parent_directory;
-	int last_seek;
+	char file_name[256];
+	char data[4096];
+	int end_seek;
 	// Add accessed time
 };
  
@@ -51,6 +43,11 @@ void init_file()
 
 } 
 
+
+///////////////////////////////////////////////////////
+// Random Access File Handlers
+//
+ 
 // open or create the file
 FILE *FileOpen(char* Filename)
   { FILE* pFile;
@@ -182,16 +179,15 @@ void InitFile(FILE* File)
 // program mains
 //
 int main (void)
-{ 
-
+  { int Rec = 0; // record number
+	FILE *File;
+ 
 	srand(time(NULL));
  
 	File = FileOpen(FNAME); 
 	if (!File)
-	{
-		printf("Curses foiled again!\n\n");
-		exit(-1); 
-	}
+	  { printf("Curses foiled again!\n\n");
+		exit(-1); }
  
 	printf("Random Access File Demonstration\n\n");
   
